@@ -89,7 +89,7 @@ mod CoinMarketCap {
         let ts = chrono::Utc.timestamp(tsi , 0).format("%Y-%m-%d %H:%M:%S");
         let json = data.to_json();
         let uriexists = format!("{}/cmc_cap?symbol=eq.{}&ts=eq.'{}'",super::DB_ADDRESS, data.symbol,ts);
-        println!("save {}",json);
+        //println!("save {}",json);
         if let Ok(mut res) = reqwest::get(&uriexists) {
             //println!("get ok");
             let getres = match res.text() {
