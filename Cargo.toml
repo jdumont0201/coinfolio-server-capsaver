@@ -1,5 +1,5 @@
 [package]
-name = "server-ohlcsaver"
+name = "server-capsaver"
 version = "0.1.0"
 authors = ["JB Dumont <jbmdumont@gmail.com>"]
 
