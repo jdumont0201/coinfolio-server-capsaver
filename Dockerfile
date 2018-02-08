@@ -8,5 +8,6 @@ ENV appname server-capsaver
 
 RUN mkdir -p /coinfolio && mkdir /coinfolio/${appname}
 ADD target/release/server-capsaver /coinfolio/${appname}
-RUN chmod 777 /coinfolio/${appname}/server-capsaver &&  ulimit -n 4096
+RUN chmod 777 /coinfolio/${appname}/server-capsaver 
+
 CMD exec /coinfolio/${appname}/server-capsaver ${pairs}
