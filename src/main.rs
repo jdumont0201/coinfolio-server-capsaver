@@ -1,3 +1,11 @@
+#![allow(non_snake_case)]
+#![allow(non_camel_case_types)]
+#![allow(unused_must_use)]
+#![allow(unused_mut)]
+#![allow(unused_variables)]
+#![allow(unused_assignments)]
+#![allow(unused_imports)]
+#![allow(dead_code)]
 
 extern crate serde;
 extern crate serde_json;
@@ -13,7 +21,8 @@ extern crate job_scheduler;
 extern crate serde_derive;
 extern crate chrono;
 extern crate rand;
-
+extern crate colored;
+mod debug;
 
 use std::collections::HashMap;
 use std::fs::File;
@@ -166,7 +175,7 @@ mod CoinMarketCap {
         let ts = chrono::Utc.timestamp(tsi, 0).format("%Y-%m-%d %H:%M:%S");
         let json = data.to_json();
         let uri = format!("{}/cmc_cap_global", super::DB_ADDRESS);
-        if let Ok(mut res) = client.post(&uri).body(json).send() {
+        if let Ok( res) = client.post(&uri).body(json).send() {
             let st = res.status();
             if st == hyper::StatusCode::Conflict {
                 //existing
@@ -185,7 +194,7 @@ fn fetch_cmc() -> Option<String> {
         Ok(mut res) => {
             println!("[GET] {} ", res.status());
             match res.text() {
-                Ok(text) => {Some(text) }
+                Ok(text) => { Some(text) }
                 Err(err) => {
                     println!(" [GET_CAP] cap ERR !!!  {}", err);
                     None
@@ -227,13 +236,20 @@ fn fetch_and_save_cmc() {
     let fetchRes = fetch_cmc();
     match fetchRes {
         Some(text) => {
-            let data: Vec<CoinMarketCap::Data> = serde_json::from_str(&text).unwrap();
-            for d in data {
-                CoinMarketCap::save_coinmarketcap(&client, d);
+            let data: Result<Vec<CoinMarketCap::Data>,serde_json::Error> = serde_json::from_str(&text);
+            match data {
+                Ok(data_) => {
+                    for d in data_ {
+                        CoinMarketCap::save_coinmarketcap(&client, d);
+                    }
+                }
+                Err(err) => {
+                    debug::err(format!("fetch_and_save_cmc {}",err))
+                }
             }
         }
         None => {
-            println!(" [fetch_and_save_cmc] cap ERR !!! ");
+            debug::err(format!("fetch_and_save_cmc no fetch"));
             ;
         }
     };
@@ -246,14 +262,18 @@ fn fetch_and_save_global_cmc() {
     let fetchRes = fetch_cmc_global();
     match fetchRes {
         Some(text) => {
-            let data: Vec<CoinMarketCap::GlobalData> = serde_json::from_str(&text).unwrap();
-            for d in data {
-                CoinMarketCap::save_coinmarketcap_global(&client, d);
+            let data: Result<CoinMarketCap::GlobalData,serde_json::Error> = serde_json::from_str(&text);
+            match data {
+                Ok(data_) => {
+                    CoinMarketCap::save_coinmarketcap_global(&client, data_);
+                }
+                Err(err) => {
+                    debug::err(format!("fetch_and_save_cmc_global {}",err))
+                }
             }
         }
         None => {
-            println!(" [fetch_and_save_cmc_global] cap ERR !!!  ");
-            ;
+            debug::err(format!("fetch_and_save_cmc_global no fetch"));
         }
     };
 }
@@ -263,6 +283,7 @@ fn main() {
     println!("Coinamics Server Cap saver");
     let mut children = vec![];
 
+    //CoinMarketCap Crypto Cap
     children.push(thread::spawn(move || {
         println!("Starting CMC  threads");
         let mut sched = job_scheduler::JobScheduler::new();
@@ -271,6 +292,18 @@ fn main() {
             thread::sleep(std::time::Duration::new(delay, 0));
             fetch_and_save_cmc();
         }));
+        loop {
+            sched.tick();
+            std::thread::sleep(std::time::Duration::from_millis(1000));
+        }
+    }));
+
+
+
+    //CoinMarketCap Global Cap
+    children.push(thread::spawn(move || {
+        println!("Starting CMC  threads");
+        let mut sched = job_scheduler::JobScheduler::new();
         sched.add(job_scheduler::Job::new("30 1,6,11,16,21,26,31,36,41,46,51,56 * * * *".parse().unwrap(), || {
             let delay = rand::thread_rng().gen_range(0, 10);
             thread::sleep(std::time::Duration::new(delay, 0));
@@ -284,5 +317,4 @@ fn main() {
     for child in children {
         let _ = child.join();
     }
-
 }
