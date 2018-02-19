@@ -23,6 +23,7 @@ extern crate chrono;
 extern crate rand;
 extern crate colored;
 mod debug;
+mod fetch;
 
 use std::collections::HashMap;
 use std::fs::File;
@@ -186,54 +187,11 @@ mod CoinMarketCap {
     }
 }
 
-fn fetch_cmc() -> Option<String> {
-    let client = reqwest::Client::new();
-    let uri = "https://api.coinmarketcap.com/v1/ticker/";
-    debug::print_fetch(uri.to_string());
-    match client.get(uri).send() {
-        Ok(mut res) => {
-            println!("[GET] {} ", res.status());
-            match res.text() {
-                Ok(text) => { Some(text) }
-                Err(err) => {
-                    println!(" [GET_CAP] cap ERR !!!  {}", err);
-                    None
-                }
-            }
-        }
-        Err(err) => {
-            println!(" [GET_CAP] cap ERR !!!  {}", err);
-            None
-        }
-    }
-}
-
-fn fetch_cmc_global() -> Option<String> {
-    let client = reqwest::Client::new();
-    let uri = "https://api.coinmarketcap.com/v1/global/";
-    debug::print_fetch(uri.to_string());
-    match client.get(uri).send() {
-        Ok(mut res) => {
-            println!("[GET] {} ", res.status());
-            match res.text() {
-                Ok(text) => { Some(text) }
-                Err(err) => {
-                    println!(" [GET_CAP] cap ERR !!!  {}", err);
-                    None
-                }
-            }
-        }
-        Err(err) => {
-            println!(" [GET_CAP] cap ERR !!!  {}", err);
-            None
-        }
-    }
-}
 
 fn fetch_and_save_cmc() {
     println!(" -> CMC market cap");
     let client = reqwest::Client::new();
-    let fetchRes = fetch_cmc();
+    let fetchRes = fetch::fetch_cmc();
     match fetchRes {
         Some(text) => {
             let data: Result<Vec<CoinMarketCap::Data>,serde_json::Error> = serde_json::from_str(&text);
@@ -259,7 +217,7 @@ fn fetch_and_save_global_cmc() {
     println!(" -> CMC market cap");
 
     let client = reqwest::Client::new();
-    let fetchRes = fetch_cmc_global();
+    let fetchRes = fetch::fetch_cmc_global();
     match fetchRes {
         Some(text) => {
             let data: Result<CoinMarketCap::GlobalData,serde_json::Error> = serde_json::from_str(&text);
