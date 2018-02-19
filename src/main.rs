@@ -85,10 +85,10 @@ mod CoinMarketCap {
             match self.max_supply {
                 Some(ref ma) => {
                     maxsup = ma.to_string();
-                    s = format!(r#"{{"ts" :"{}","symbol"  :"{}","marketcap"  :"{}","supply":"{}","maxsupply":"{}"}}"#, ts, self.symbol, self.market_cap_usd, self.total_supply, maxsup);
+                    s = format!(r#"{{"ts" :"{}","symbol"  :"{}","marketcap"  :"{}","change_pc_24h":"{}","change_pc_7d":"{}","change_pc_1h":"{}","supply":"{}","maxsupply":"{}"}}"#, ts, self.symbol, self.market_cap_usd, self.percent_change_24h,self.percent_change_7d,self.percent_change_1h,self.total_supply, maxsup);
                 }
                 None => {
-                    s = format!(r#"{{"ts" :"{}","symbol"  :"{}","marketcap"  :"{}","supply":"{}"}}"#, ts, self.symbol, self.market_cap_usd, self.total_supply);
+                    s = format!(r#"{{"ts" :"{}","symbol"  :"{}","marketcap"  :"{}","change_pc_24h":"{}","change_pc_7d":"{}","change_pc_1h":"{}","supply":"{}"}}"#, ts, self.symbol,self.percent_change_24h,self.percent_change_1h,self.percent_change_7d, self.market_cap_usd, self.total_supply);
                 }
             };
 
