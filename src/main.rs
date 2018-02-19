@@ -98,8 +98,8 @@ mod CoinMarketCap {
 
     #[derive(Serialize, Deserialize)]
     pub struct GlobalData {
-        total_market_cap_usd: u64,
-        total_24h_volume_usd: u64,
+        total_market_cap_usd: f64,
+        total_24h_volume_usd: f64,
         bitcoin_percentage_of_market_cap: f64,
         active_currencies: f64,
         active_assets: f64,
@@ -187,9 +187,9 @@ mod CoinMarketCap {
 }
 
 fn fetch_cmc() -> Option<String> {
-    println!(" -> CMC market cap");
     let client = reqwest::Client::new();
     let uri = "https://api.coinmarketcap.com/v1/ticker/";
+    debug::print_fetch(uri.to_string());
     match client.get(uri).send() {
         Ok(mut res) => {
             println!("[GET] {} ", res.status());
@@ -209,9 +209,9 @@ fn fetch_cmc() -> Option<String> {
 }
 
 fn fetch_cmc_global() -> Option<String> {
-    println!(" -> CMC market cap");
     let client = reqwest::Client::new();
     let uri = "https://api.coinmarketcap.com/v1/global/";
+    debug::print_fetch(uri.to_string());
     match client.get(uri).send() {
         Ok(mut res) => {
             println!("[GET] {} ", res.status());

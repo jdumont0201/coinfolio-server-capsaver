@@ -2,7 +2,7 @@
 use colored::*;
 
 
-pub fn print_fetch( url: &String) {
+pub fn print_fetch( url: String) {
     println!("{}", format!("fetch {}", url).yellow());
 }
 pub fn err(msg: String) {
